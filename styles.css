@@ -187,8 +187,8 @@ body[data-theme="default"]::before {
 
 #new-game {
     flex: 1;
-    padding: 12px 24px;
-    font-size: 18px;
+    padding: 8px 16px;
+    font-size: 16px;
     background-color: var(--primary-color);
     color: var(--button-text);
     border: none;
@@ -204,8 +204,8 @@ body[data-theme="default"]::before {
 
 #difficulty {
     flex: 1;
-    padding: 12px 24px;
-    font-size: 18px;
+    padding: 8px 16px;
+    font-size: 16px;
     background-color: var(--card-front);
     color: var(--text-color);
     border: 1px solid var(--shadow-color);
@@ -358,6 +358,9 @@ select {
 @media (max-width: 768px) {
     body {
         padding: 0;
+        overflow: hidden;
+        position: relative;
+        height: 100vh;
     }
     
     #game-container {
@@ -368,12 +371,15 @@ select {
         border-radius: 0;
         box-shadow: none;
         gap: 0;
+        position: relative;
+        overflow: hidden;
     }
     
     #game-content {
         padding: 16px;
         height: calc(100vh - 32px);
         overflow-y: auto;
+        position: relative;
     }
     
     .card {
@@ -419,14 +425,17 @@ select {
         top: 50%;
         left: 50%;
         transform: translate(-50%, -50%);
-        width: 80%;
-        max-width: none;
+        width: 90%;
+        max-width: 400px;
         max-height: 80vh;
         overflow-y: auto;
         z-index: 1000;
         background-color: var(--container-bg);
         box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
         border: 1px solid var(--shadow-color);
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
     }
     
     #game-summary::before {
@@ -496,6 +505,7 @@ select {
     position: relative;
     transition: transform 0.3s ease, opacity 0.3s ease;
     border: 1px solid var(--shadow-color);
+    z-index: 1000;
 }
 
 #game-summary.hidden {

@@ -244,12 +244,10 @@ function startTimer() {
 
 // End game
 function endGame() {
+    console.log('Game ended, showing summary');
+    console.log('Viewport width:', window.innerWidth);
     clearInterval(gameState.timer);
-    const finalTime = timerDisplay.textContent;
-    finalTimeDisplay.textContent = finalTime;
-    document.getElementById('final-moves').textContent = gameState.moves;
-    updateHighScores(finalTime);
-    gameSummary.classList.remove('hidden');
+    showGameSummary();
 }
 
 // Update high scores
@@ -338,30 +336,38 @@ document.addEventListener('touchmove', function(e) {
 initGame();
 
 function showGameSummary() {
+    console.log('Showing game summary');
     const summary = document.getElementById('game-summary');
+    console.log('Summary element:', summary);
+    console.log('Summary position:', summary.getBoundingClientRect());
+    console.log('Summary classes:', summary.classList);
+    console.log('Is mobile view:', window.innerWidth <= 768);
+    
     const finalMoves = document.getElementById('final-moves');
     const finalTime = document.getElementById('final-time');
-    const highScoresList = document.getElementById('high-scores-list');
     
-    finalMoves.textContent = moves;
-    finalTime.textContent = formatTime(timer);
+    finalMoves.textContent = gameState.moves;
+    finalTime.textContent = timerDisplay.textContent;
     
     // Update high scores
-    updateHighScores();
+    updateHighScores(timerDisplay.textContent);
     
     // Display high scores
-    highScoresList.innerHTML = '';
-    highScores.forEach((score, index) => {
-        const li = document.createElement('li');
-        li.textContent = `${index + 1}. ${formatTime(score)}`;
-        highScoresList.appendChild(li);
-    });
+    displayHighScores();
     
+    // Remove hidden class to show the modal
+    console.log('Removing hidden class');
     summary.classList.remove('hidden');
+    console.log('Summary classList after removal:', summary.classList);
+    console.log('Summary computed style:', window.getComputedStyle(summary));
     
     // Add click outside handler for mobile
     if (window.innerWidth <= 768) {
+        console.log('Setting up mobile click handler');
         const handleClickOutside = (event) => {
+            console.log('Click outside detected');
+            console.log('Clicked element:', event.target);
+            console.log('Summary contains target:', summary.contains(event.target));
             if (!summary.contains(event.target)) {
                 summary.classList.add('hidden');
                 document.removeEventListener('click', handleClickOutside);
@@ -371,6 +377,7 @@ function showGameSummary() {
         // Use setTimeout to prevent immediate trigger of the click event
         setTimeout(() => {
             document.addEventListener('click', handleClickOutside);
-        }, 0);
+            console.log('Click handler added');
+        }, 100);
     }
 }
