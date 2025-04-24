@@ -151,7 +151,12 @@ body[data-theme="default"]::before {
 
 #game-info {
     text-align: center;
-    margin-bottom: 16px;
+    margin: 0 auto 16px;
+    width: 100%;
+    max-width: 600px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 #game-info h1 {
@@ -167,9 +172,46 @@ body[data-theme="default"]::before {
 
 #game-stats {
     display: flex;
-    justify-content: space-around;
+    justify-content: center;
+    gap: 16px;
     margin: 16px 0;
     font-size: 18px;
+}
+
+#game-controls {
+    display: flex;
+    gap: 8px;
+    width: 100%;
+    max-width: 600px;
+    margin: 16px 0;
+}
+
+#new-game {
+    flex: 1;
+    padding: 12px 24px;
+    font-size: 18px;
+    background-color: var(--primary-color);
+    color: var(--button-text);
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+#difficulty {
+    flex: 1;
+    padding: 12px 24px;
+    font-size: 18px;
+    background-color: var(--card-front);
+    color: var(--text-color);
+    border: 1px solid var(--shadow-color);
+    border-radius: 8px;
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 0.5rem center;
+    background-size: 1.2em;
 }
 
 button, select {
@@ -301,7 +343,8 @@ select {
         font-size: 16px;
     }
     
-    button, select {
+    #new-game,
+    #difficulty {
         font-size: 16px;
         padding: 10px 20px;
     }
@@ -342,7 +385,8 @@ select {
         font-size: 14px;
     }
     
-    button, select {
+    #new-game,
+    #difficulty {
         font-size: 14px;
         padding: 8px 16px;
     }
@@ -368,7 +412,8 @@ select {
         font-size: 12px;
     }
     
-    button, select {
+    #new-game,
+    #difficulty {
         font-size: 12px;
         padding: 6px 12px;
     }
@@ -631,29 +676,31 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 #emoji-preview {
     display: flex;
     flex-wrap: wrap;
-    justify-content: center;
-    gap: 8px;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
     margin: 16px auto;
     padding: 16px;
-    background-color: rgba(var(--primary-color-rgb), 0.08);
+    background-color: rgba(var(--primary-color-rgb), 0.05);
     border-radius: 12px;
     box-shadow: 0 2px 4px var(--shadow-color);
     width: 100%;
-    max-width: 100%;
-    box-sizing: border-box;
-    overflow-x: hidden;
+    max-width: 600px;
 }
 
 #emoji-preview span {
+    flex: 1;
+    min-width: 40px;
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     font-size: 24px;
     padding: 8px;
     background-color: var(--card-front);
     border-radius: 8px;
     box-shadow: 0 2px 4px var(--shadow-color);
     transition: all 0.2s ease;
-    flex: 0 0 auto;
-    min-width: 0;
-    text-align: center;
 }
 
 #emoji-preview span:hover:not(.matched) {
@@ -682,12 +729,11 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 /* Tablet */
 @media (max-width: 1024px) {
     #emoji-preview {
-        padding: 12px;
-        gap: 6px;
-        margin: 12px 0;
+        gap: 12px;
     }
     
     #emoji-preview span {
+        min-width: 36px;
         font-size: 20px;
         padding: 6px;
     }
@@ -696,32 +742,36 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 /* Mobile */
 @media (max-width: 768px) {
     #emoji-preview {
-        padding: 8px;
-        gap: 4px;
-        margin: 8px 0;
-        border-radius: 8px;
-        width: calc(100% - 16px);
+        gap: 8px;
+        padding: 12px;
     }
     
     #emoji-preview span {
+        min-width: 32px;
         font-size: 18px;
         padding: 4px;
-        border-radius: 6px;
     }
 }
 
 /* Small Mobile */
 @media (max-width: 480px) {
     #emoji-preview {
-        padding: 6px;
-        gap: 3px;
-        margin: 6px 0;
-        width: calc(100% - 12px);
+        gap: 6px;
+        padding: 8px;
     }
     
     #emoji-preview span {
+        min-width: 28px;
         font-size: 16px;
         padding: 3px;
-        border-radius: 4px;
     }
+}
+
+.title-container,
+.overflow-menu,
+.menu-button,
+.menu-content,
+.menu-item,
+[data-theme="dark"] {
+    display: none;
 }
