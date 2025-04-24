@@ -151,12 +151,7 @@ body[data-theme="default"]::before {
 
 #game-info {
     text-align: center;
-    margin: 0 auto 16px;
-    width: 100%;
-    max-width: 600px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+    margin-bottom: 16px;
 }
 
 #game-info h1 {
@@ -172,46 +167,9 @@ body[data-theme="default"]::before {
 
 #game-stats {
     display: flex;
-    justify-content: center;
-    gap: 16px;
+    justify-content: space-around;
     margin: 16px 0;
     font-size: 18px;
-}
-
-#game-controls {
-    display: flex;
-    gap: 8px;
-    width: 100%;
-    max-width: 600px;
-    margin: 16px 0;
-}
-
-#new-game {
-    flex: 1;
-    padding: 12px 24px;
-    font-size: 18px;
-    background-color: var(--primary-color);
-    color: var(--button-text);
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-#difficulty {
-    flex: 1;
-    padding: 12px 24px;
-    font-size: 18px;
-    background-color: var(--card-front);
-    color: var(--text-color);
-    border: 1px solid var(--shadow-color);
-    border-radius: 8px;
-    cursor: pointer;
-    appearance: none;
-    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-    background-repeat: no-repeat;
-    background-position: right 0.5rem center;
-    background-size: 1.2em;
 }
 
 button, select {
@@ -343,8 +301,7 @@ select {
         font-size: 16px;
     }
     
-    #new-game,
-    #difficulty {
+    button, select {
         font-size: 16px;
         padding: 10px 20px;
     }
@@ -385,8 +342,7 @@ select {
         font-size: 14px;
     }
     
-    #new-game,
-    #difficulty {
+    button, select {
         font-size: 14px;
         padding: 8px 16px;
     }
@@ -394,6 +350,45 @@ select {
     #emoji-preview span {
         font-size: 20px;
         padding: 6px;
+    }
+    
+    #game-summary {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 80%;
+        max-width: none;
+        max-height: 80vh;
+        overflow-y: auto;
+        z-index: 1000;
+        background-color: var(--container-bg);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        border: 1px solid var(--shadow-color);
+    }
+    
+    #game-summary::before {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: -1;
+        backdrop-filter: blur(2px);
+    }
+    
+    #game-summary.hidden {
+        display: none;
+    }
+    
+    #high-scores {
+        margin-top: 16px;
+        padding: 16px;
+        background-color: rgba(var(--primary-color-rgb), 0.05);
+        border-radius: 8px;
+        border: 1px solid var(--shadow-color);
     }
 }
 
@@ -412,8 +407,7 @@ select {
         font-size: 12px;
     }
     
-    #new-game,
-    #difficulty {
+    button, select {
         font-size: 12px;
         padding: 6px 12px;
     }
@@ -504,59 +498,6 @@ select {
 @media (max-width: 1024px) {
     #game-summary {
         width: 250px;
-    }
-}
-
-/* Mobile */
-@media (max-width: 768px) {
-    #game-container {
-        flex-direction: column;
-        max-width: 100%;
-        height: 100vh;
-        padding: 0;
-        border-radius: 0;
-        box-shadow: none;
-        gap: 0;
-    }
-    
-    #game-content {
-        padding: 16px;
-        height: calc(100vh - 32px);
-        overflow-y: auto;
-    }
-    
-    #game-summary {
-        position: fixed;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        width: 90%;
-        max-width: 400px;
-        max-height: 90vh;
-        overflow-y: auto;
-        z-index: 1000;
-        background-color: var(--container-bg);
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-        border: 1px solid var(--shadow-color);
-    }
-    
-    #game-summary::before {
-        content: '';
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        z-index: -1;
-        backdrop-filter: blur(2px);
-    }
-    
-    #high-scores {
-        margin-top: 16px;
-        padding: 16px;
-        background-color: rgba(var(--primary-color-rgb), 0.05);
-        border-radius: 8px;
-        border: 1px solid var(--shadow-color);
     }
 }
 
@@ -676,12 +617,11 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 #emoji-preview {
     display: flex;
     flex-wrap: wrap;
-    justify-content: space-between;
-    align-items: center;
-    gap: 16px;
+    justify-content: center;
+    gap: 8px;
     margin: 16px auto;
     padding: 16px;
-    background-color: rgba(var(--primary-color-rgb), 0.05);
+    background-color: rgba(var(--primary-color-rgb), 0.08);
     border-radius: 12px;
     box-shadow: 0 2px 4px var(--shadow-color);
     width: 100%;
@@ -689,12 +629,6 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 }
 
 #emoji-preview span {
-    flex: 1;
-    min-width: 40px;
-    aspect-ratio: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
     font-size: 24px;
     padding: 8px;
     background-color: var(--card-front);
@@ -726,52 +660,8 @@ input[type="date"]::-webkit-calendar-picker-indicator {
     transform-origin: center;
 }
 
-/* Tablet */
-@media (max-width: 1024px) {
-    #emoji-preview {
-        gap: 12px;
-    }
-    
+@media (max-width: 600px) {
     #emoji-preview span {
-        min-width: 36px;
-        font-size: 20px;
-        padding: 6px;
-    }
-}
-
-/* Mobile */
-@media (max-width: 768px) {
-    #emoji-preview {
-        gap: 8px;
-        padding: 12px;
-    }
-    
-    #emoji-preview span {
-        min-width: 32px;
         font-size: 18px;
-        padding: 4px;
     }
-}
-
-/* Small Mobile */
-@media (max-width: 480px) {
-    #emoji-preview {
-        gap: 6px;
-        padding: 8px;
-    }
-    
-    #emoji-preview span {
-        min-width: 28px;
-        font-size: 16px;
-        padding: 3px;
-    }
-}
-
-.title-container,
-.overflow-menu,
-.menu-button,
-.menu-content,
-.menu-item,
-[data-theme="dark"] {
-    display: none;
 }

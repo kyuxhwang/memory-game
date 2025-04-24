@@ -336,3 +336,41 @@ document.addEventListener('touchmove', function(e) {
 
 // Initialize game on load
 initGame();
+
+function showGameSummary() {
+    const summary = document.getElementById('game-summary');
+    const finalMoves = document.getElementById('final-moves');
+    const finalTime = document.getElementById('final-time');
+    const highScoresList = document.getElementById('high-scores-list');
+    
+    finalMoves.textContent = moves;
+    finalTime.textContent = formatTime(timer);
+    
+    // Update high scores
+    updateHighScores();
+    
+    // Display high scores
+    highScoresList.innerHTML = '';
+    highScores.forEach((score, index) => {
+        const li = document.createElement('li');
+        li.textContent = `${index + 1}. ${formatTime(score)}`;
+        highScoresList.appendChild(li);
+    });
+    
+    summary.classList.remove('hidden');
+    
+    // Add click outside handler for mobile
+    if (window.innerWidth <= 768) {
+        const handleClickOutside = (event) => {
+            if (!summary.contains(event.target)) {
+                summary.classList.add('hidden');
+                document.removeEventListener('click', handleClickOutside);
+            }
+        };
+        
+        // Use setTimeout to prevent immediate trigger of the click event
+        setTimeout(() => {
+            document.addEventListener('click', handleClickOutside);
+        }, 0);
+    }
+}
