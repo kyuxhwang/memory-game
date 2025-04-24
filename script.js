@@ -14,6 +14,7 @@ const EMOJIS = [
 ];
 
 const DIFFICULTY_LEVELS = {
+    baby: { pairs: 2, gridSize: 2 },
     easy: { pairs: 8, gridSize: 4 },
     medium: { pairs: 18, gridSize: 6 },
     hard: { pairs: 32, gridSize: 8 },
@@ -29,27 +30,36 @@ let gameState = {
     timer: null,
     startTime: null,
     isPlaying: false,
-    difficulty: 'medium',
-    cheatMode: false
+    cheatMode: false,
+    difficulty: 'easy',
+    totalGames: parseInt(localStorage.getItem('totalGames') || '0')
 };
 
 // DOM elements
 const gameBoard = document.getElementById('game-board');
 const movesDisplay = document.getElementById('moves');
+const matchesDisplay = document.getElementById('matches');
 const timerDisplay = document.getElementById('timer');
+const totalGamesDisplay = document.getElementById('total-games');
 const newGameBtn = document.getElementById('new-game');
 const difficultySelect = document.getElementById('difficulty');
-const cheatModeBtn = document.getElementById('cheat-mode');
-const gameSummary = document.getElementById('game-summary');
-const finalTimeDisplay = document.getElementById('final-time');
-const highScoresList = document.getElementById('high-scores-list');
 const playAgainBtn = document.getElementById('play-again');
+const gameSummary = document.getElementById('game-summary');
+const cheatButton = document.getElementById('cheat-button');
 const emojiPreview = document.getElementById('emoji-preview');
-const darkModeToggle = document.getElementById('dark-mode-checkbox');
-const modeLabel = document.getElementById('mode-label');
+const highScoresList = document.getElementById('high-scores-list');
 
 // Initialize game
 function initGame() {
+    console.log('Initializing game...');
+    
+    // Stop any existing timer
+    if (gameState.timer) {
+        clearInterval(gameState.timer);
+    }
+
+    // Reset game state but keep totalGames
+    const totalGames = gameState.totalGames;
     gameState = {
         cards: [],
         flippedCards: [],
@@ -58,37 +68,43 @@ function initGame() {
         timer: null,
         startTime: null,
         isPlaying: false,
+        cheatMode: false,
         difficulty: difficultySelect.value,
-        cheatMode: false
+        totalGames: totalGames
     };
 
-    // Hide the game summary panel
-    gameSummary.classList.add('hidden');
-    
-    // Reset timer display immediately
+    // Reset UI
+    movesDisplay.textContent = '0';
+    matchesDisplay.textContent = '0';
     timerDisplay.textContent = '00:00';
-    if (gameState.timer) {
-        clearInterval(gameState.timer);
-    }
-
-    updateStats();
+    totalGamesDisplay.textContent = gameState.totalGames;
+    document.getElementById('modal-overlay').classList.remove('visible');
+    document.getElementById('game-summary').classList.remove('visible');
+    cheatButton.classList.remove('active');
+    
+    // Clear and create game board
+    gameBoard.innerHTML = '';
     createGameBoard();
-    setupEventListeners();
     showEmojiPreview();
+    
+    console.log('Game initialized');
 }
 
 // Create game board
 function createGameBoard() {
-    gameBoard.innerHTML = '';
+    console.log('Creating game board...');
     const { pairs, gridSize } = DIFFICULTY_LEVELS[gameState.difficulty];
+    console.log('Difficulty:', gameState.difficulty, 'Pairs:', pairs, 'Grid size:', gridSize);
+    
     gameBoard.style.gridTemplateColumns = `repeat(${gridSize}, 1fr)`;
     gameBoard.style.gridTemplateRows = `repeat(${gridSize}, 1fr)`;
     gameBoard.className = `${gameState.difficulty}-mode`;
 
-    // Select random emojis for the game
+    // Select random emojis
     const selectedEmojis = EMOJIS.sort(() => 0.5 - Math.random()).slice(0, pairs);
     const gameEmojis = [...selectedEmojis, ...selectedEmojis].sort(() => 0.5 - Math.random());
 
+    // Create cards
     gameState.cards = gameEmojis.map((emoji, index) => ({
         id: index,
         emoji,
@@ -96,16 +112,16 @@ function createGameBoard() {
         isMatched: false
     }));
 
+    // Add cards to board
     gameState.cards.forEach(card => {
         const cardElement = document.createElement('div');
         cardElement.className = 'card';
         cardElement.dataset.id = card.id;
-        cardElement.textContent = gameState.cheatMode ? card.emoji : '';
+        cardElement.dataset.emoji = card.emoji;
         gameBoard.appendChild(cardElement);
     });
-
-    // Show the emoji preview after creating the game board
-    showEmojiPreview();
+    
+    console.log('Game board created with', gameState.cards.length, 'cards');
 }
 
 // Show emoji preview
@@ -122,44 +138,24 @@ function showEmojiPreview() {
     });
 }
 
-// Setup event listeners
-function setupEventListeners() {
-    gameBoard.addEventListener('click', handleCardClick);
-    newGameBtn.addEventListener('click', initGame);
-    difficultySelect.addEventListener('change', initGame);
-    cheatModeBtn.addEventListener('click', toggleCheatMode);
-    playAgainBtn.addEventListener('click', initGame);
-    darkModeToggle.addEventListener('change', toggleDarkMode);
-}
-
 // Handle card click
 function handleCardClick(event) {
     const cardElement = event.target.closest('.card');
-    if (!cardElement || cardElement.classList.contains('matched')) {
-            return;
-        }
-
-    if (!gameState.isPlaying) {
-        gameState.isPlaying = true;
-        startTimer();
-    }
+    if (!cardElement || cardElement.classList.contains('matched')) return;
 
     const cardId = parseInt(cardElement.dataset.id);
     const card = gameState.cards[cardId];
 
-    // Don't allow selecting the same card twice
-    if (gameState.flippedCards.some(flipped => flipped.card.id === card.id)) {
-        return;
-    }
-
     if (gameState.flippedCards.length < 2 && !card.isFlipped) {
-        if (!gameState.cheatMode) {
-            flipCard(cardElement, card);
-        } else {
-            // In cheat mode, just add the selected class
-            cardElement.classList.add('selected');
+        if (!gameState.isPlaying) {
+            gameState.isPlaying = true;
+            startTimer();
         }
-        gameState.flippedCards.push({ element: cardElement, card });
+
+        // Add selected class to show which card is currently selected
+        cardElement.classList.add('selected');
+        flipCard(cardElement, card);
+        gameState.flippedCards.push({ id: cardId, emoji: card.emoji });
 
         if (gameState.flippedCards.length === 2) {
             gameState.moves++;
@@ -174,52 +170,53 @@ function flipCard(cardElement, card) {
     card.isFlipped = true;
     cardElement.classList.add('flipped');
     cardElement.textContent = card.emoji;
-    cardElement.classList.add('flip');
 }
 
 // Check for match
 function checkMatch() {
     const [card1, card2] = gameState.flippedCards;
+    const card1Element = document.querySelector(`.card[data-id="${card1.id}"]`);
+    const card2Element = document.querySelector(`.card[data-id="${card2.id}"]`);
 
-    if (card1.card.emoji === card2.card.emoji) {
-        card1.element.classList.add('matched');
-        card2.element.classList.add('matched');
-        card1.element.classList.remove('selected');
-        card2.element.classList.remove('selected');
-        card1.card.isMatched = true;
-        card2.card.isMatched = true;
-        gameState.matchedPairs++;
+    // Remove selected class from both cards
+    card1Element.classList.remove('selected');
+    card2Element.classList.remove('selected');
 
-        // Add jiggle animation to matched cards
-        card1.element.classList.add('jiggle');
-        card2.element.classList.add('jiggle');
+    if (card1.emoji === card2.emoji) {
+        setTimeout(() => {
+            card1Element.classList.add('matched');
+            card2Element.classList.add('matched');
+            gameState.matchedPairs++;
+            matchesDisplay.textContent = gameState.matchedPairs;
+            
+            // Trigger confetti for each match
+            confetti({
+                particleCount: 30,
+                spread: 50,
+                origin: { y: 0.6 }
+            });
 
-        // Trigger confetti effect
-        confetti({
-            particleCount: 100,
-            spread: 70,
-            origin: { y: 0.6 }
-        });
-
-        // Update emoji preview
-        updateEmojiPreview();
-
-        if (gameState.matchedPairs === DIFFICULTY_LEVELS[gameState.difficulty].pairs) {
-            endGame();
-        }
+            if (gameState.matchedPairs === DIFFICULTY_LEVELS[gameState.difficulty].pairs) {
+                endGame();
+            }
+        }, 300);
     } else {
+        // Add mismatch class to both cards
+        card1Element.classList.add('mismatch');
+        card2Element.classList.add('mismatch');
+        
         setTimeout(() => {
             if (!gameState.cheatMode) {
-                card1.element.classList.remove('flipped');
-                card2.element.classList.remove('flipped');
-                card1.element.textContent = '';
-                card2.element.textContent = '';
-            } else {
-                card1.element.classList.remove('selected');
-                card2.element.classList.remove('selected');
+                card1Element.classList.remove('flipped');
+                card2Element.classList.remove('flipped');
+                card1Element.textContent = '';
+                card2Element.textContent = '';
             }
-            card1.card.isFlipped = false;
-            card2.card.isFlipped = false;
+            // Remove mismatch class after animation
+            card1Element.classList.remove('mismatch');
+            card2Element.classList.remove('mismatch');
+            gameState.cards[card1.id].isFlipped = false;
+            gameState.cards[card2.id].isFlipped = false;
         }, 1000);
     }
 
@@ -244,10 +241,86 @@ function startTimer() {
 
 // End game
 function endGame() {
-    console.log('Game ended, showing summary');
-    console.log('Viewport width:', window.innerWidth);
+    console.log('=== Game End Debug ===');
+    console.log('1. Game ended, showing summary');
+    console.log('2. Current moves:', gameState.moves);
+    console.log('3. Current time:', timerDisplay.textContent);
+    
+    // Increment total games played
+    gameState.totalGames++;
+    localStorage.setItem('totalGames', gameState.totalGames.toString());
+    
     clearInterval(gameState.timer);
-    showGameSummary();
+    const finalMoves = document.getElementById('final-moves');
+    const finalTime = document.getElementById('final-time');
+    const overlay = document.getElementById('modal-overlay');
+    const summary = document.getElementById('game-summary');
+    
+    console.log('4. DOM elements found:', {
+        finalMoves: !!finalMoves,
+        finalTime: !!finalTime,
+        overlay: !!overlay,
+        summary: !!summary,
+        highScoresList: !!highScoresList
+    });
+    
+    // Update final stats
+    finalMoves.textContent = gameState.moves;
+    finalTime.textContent = timerDisplay.textContent;
+    
+    // Update high scores
+    updateHighScores(timerDisplay.textContent);
+    displayHighScores();
+    
+    // Show the overlay and summary
+    console.log('5. Adding visible class to overlay and summary');
+    overlay.classList.add('visible');
+    summary.classList.add('visible');
+    
+    console.log('6. Current overlay classes:', overlay.classList.toString());
+    console.log('7. Current summary classes:', summary.classList.toString());
+    
+    // Debug summary content
+    console.log('8. Summary content:', {
+        title: summary.querySelector('h2')?.textContent,
+        moves: summary.querySelector('#final-moves')?.textContent,
+        time: summary.querySelector('#final-time')?.textContent,
+        highScores: summary.querySelector('#high-scores-list')?.innerHTML
+    });
+    
+    // Debug computed styles
+    const summaryStyle = window.getComputedStyle(summary);
+    console.log('9. Summary computed styles:', {
+        display: summaryStyle.display,
+        visibility: summaryStyle.visibility,
+        opacity: summaryStyle.opacity,
+        transform: summaryStyle.transform,
+        zIndex: summaryStyle.zIndex
+    });
+
+    // Trigger confetti celebration
+    confetti({
+        particleCount: 150,
+        spread: 80,
+        origin: { y: 0.6 }
+    });
+
+    setTimeout(() => {
+        confetti({
+            particleCount: 75,
+            angle: 60,
+            spread: 65,
+            origin: { x: 0 }
+        });
+        confetti({
+            particleCount: 75,
+            angle: 120,
+            spread: 65,
+            origin: { x: 1 }
+        });
+    }, 250);
+    
+    console.log('=== End Game Debug ===');
 }
 
 // Update high scores
@@ -265,39 +338,78 @@ function updateHighScores(finalTime) {
 
 // Display high scores
 function displayHighScores() {
+    console.log('=== Display High Scores Debug ===');
+    console.log('1. High scores list element:', highScoresList);
+    console.log('2. Current high scores list HTML:', highScoresList.innerHTML);
+    
     const highScores = JSON.parse(localStorage.getItem('highScores') || '{}');
+    console.log('3. Retrieved high scores:', highScores);
+    
     highScoresList.innerHTML = '';
 
     Object.entries(highScores).forEach(([difficulty, score]) => {
         const li = document.createElement('li');
         li.textContent = `${difficulty.charAt(0).toUpperCase() + difficulty.slice(1)}: ${score.time} (${score.date})`;
         highScoresList.appendChild(li);
+        console.log('4. Added high score:', li.textContent);
     });
+    
+    console.log('5. Final high scores list HTML:', highScoresList.innerHTML);
+    console.log('=== End High Scores Debug ===');
 }
 
 // Toggle cheat mode
 function toggleCheatMode() {
-    gameState.cheatMode = !gameState.cheatMode;
-    cheatModeBtn.classList.toggle('active');
+    console.log('=== Cheat Mode Debug ===');
+    console.log('1. Button clicked, current cheatMode state:', gameState.cheatMode);
     
-    // Reset all unmatched cards
-    gameState.cards.forEach((card, index) => {
-        const cardElement = gameBoard.children[index];
-        if (!card.isMatched) {
-            cardElement.textContent = gameState.cheatMode ? card.emoji : '';
-            cardElement.classList.remove('flipped');
-            card.isFlipped = false;
+    // Toggle the state
+    gameState.cheatMode = !gameState.cheatMode;
+    console.log('2. New cheatMode state:', gameState.cheatMode);
+    
+    // Update button appearance
+    if (gameState.cheatMode) {
+        cheatButton.classList.add('active');
+        console.log('3. Added active class to button');
+    } else {
+        cheatButton.classList.remove('active');
+        console.log('3. Removed active class from button');
+    }
+    
+    // Get all unmatched cards
+    const cards = document.querySelectorAll('.card:not(.matched)');
+    console.log('4. Found unmatched cards:', cards.length);
+    
+    // Process each card
+    cards.forEach((card, index) => {
+        const cardId = parseInt(card.dataset.id);
+        const cardData = gameState.cards[cardId];
+        
+        console.log(`5. Processing card ${index + 1}:`, {
+            cardId,
+            isFlipped: cardData.isFlipped,
+            isMatched: card.classList.contains('matched'),
+            currentContent: card.textContent
+        });
+        
+        if (gameState.cheatMode) {
+            // Show the card but don't mark it as flipped
+            card.textContent = cardData.emoji;
+            card.classList.add('flipped');
+            console.log(`6. Card ${index + 1} shown with emoji:`, cardData.emoji);
+        } else {
+            // Hide the card if it wasn't already flipped by the player
+            if (!cardData.isFlipped) {
+                card.textContent = '';
+                card.classList.remove('flipped');
+                console.log(`6. Card ${index + 1} hidden`);
+            } else {
+                console.log(`6. Card ${index + 1} was player-flipped, keeping visible`);
+            }
         }
     });
-
-    // Clear any pending matches
-    gameState.flippedCards = [];
-}
-
-// Toggle dark mode
-function toggleDarkMode() {
-    document.body.setAttribute('data-theme', darkModeToggle.checked ? 'dark' : 'light');
-    modeLabel.textContent = darkModeToggle.checked ? 'Dark Mode' : 'Light Mode';
+    
+    console.log('=== End Cheat Mode Debug ===');
 }
 
 // Update emoji preview
@@ -335,49 +447,22 @@ document.addEventListener('touchmove', function(e) {
 // Initialize game on load
 initGame();
 
-function showGameSummary() {
-    console.log('Showing game summary');
-    const summary = document.getElementById('game-summary');
-    console.log('Summary element:', summary);
-    console.log('Summary position:', summary.getBoundingClientRect());
-    console.log('Summary classes:', summary.classList);
-    console.log('Is mobile view:', window.innerWidth <= 768);
-    
-    const finalMoves = document.getElementById('final-moves');
-    const finalTime = document.getElementById('final-time');
-    
-    finalMoves.textContent = gameState.moves;
-    finalTime.textContent = timerDisplay.textContent;
-    
-    // Update high scores
-    updateHighScores(timerDisplay.textContent);
-    
-    // Display high scores
-    displayHighScores();
-    
-    // Remove hidden class to show the modal
-    console.log('Removing hidden class');
-    summary.classList.remove('hidden');
-    console.log('Summary classList after removal:', summary.classList);
-    console.log('Summary computed style:', window.getComputedStyle(summary));
-    
-    // Add click outside handler for mobile
-    if (window.innerWidth <= 768) {
-        console.log('Setting up mobile click handler');
-        const handleClickOutside = (event) => {
-            console.log('Click outside detected');
-            console.log('Clicked element:', event.target);
-            console.log('Summary contains target:', summary.contains(event.target));
-            if (!summary.contains(event.target)) {
-                summary.classList.add('hidden');
-                document.removeEventListener('click', handleClickOutside);
-            }
-        };
-        
-        // Use setTimeout to prevent immediate trigger of the click event
-        setTimeout(() => {
-            document.addEventListener('click', handleClickOutside);
-            console.log('Click handler added');
-        }, 100);
+// Add event listener for clicking outside the modal
+document.getElementById('modal-overlay').addEventListener('click', function(e) {
+    if (e.target === this) {
+        this.classList.remove('visible');
+        document.getElementById('game-summary').classList.remove('visible');
     }
-}
+});
+
+// Setup event listeners
+console.log('Setting up event listeners...');
+gameBoard.addEventListener('click', handleCardClick);
+newGameBtn.addEventListener('click', initGame);
+difficultySelect.addEventListener('change', initGame);
+playAgainBtn.addEventListener('click', initGame);
+cheatButton.addEventListener('click', toggleCheatMode);
+
+// Start the game
+console.log('Starting game...');
+initGame();

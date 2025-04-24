@@ -16,34 +16,39 @@
     <div id="game-container">
         <div id="game-content">
             <div id="game-info">
+                <button id="cheat-button" class="subtle-button" title="Toggle cheat mode">🔍</button>
                 <h1>Memory Game</h1>
                 <div id="game-stats">
                     <span>Moves: <span id="moves">0</span></span>
                     <span>Matches: <span id="matches">0</span></span>
                     <span>Time: <span id="timer">00:00</span></span>
+                    <span>Total Games: <span id="total-games">0</span></span>
                 </div>
                 <div id="game-controls">
                     <button id="new-game">New Game</button>
                     <select id="difficulty">
+                        <option value="baby">Baby (2x2)</option>
                         <option value="easy">Easy (4x4)</option>
                         <option value="medium">Medium (6x6)</option>
                         <option value="hard">Hard (8x8)</option>
                         <option value="ultra">Ultra Hard (10x10)</option>
                     </select>
                 </div>
+                <div id="emoji-preview"></div>
             </div>
-            <div id="emoji-preview"></div>
             <div id="game-board"></div>
         </div>
-        <div id="game-summary" class="hidden">
-            <h2>Congratulations! 🎉</h2>
-            <p>You completed the game in <span id="final-moves">0</span> moves!</p>
-            <p>Time: <span id="final-time">00:00</span></p>
-            <div id="high-scores">
-                <h3>Fastest Times</h3>
-                <ol id="high-scores-list"></ol>
+        <div id="modal-overlay">
+            <div id="game-summary">
+                <h2>Congratulations! 🎉</h2>
+                <p>You completed the game in <span id="final-moves">0</span> moves!</p>
+                <p>Time: <span id="final-time">00:00</span></p>
+                <div id="high-scores">
+                    <h3>Fastest Times</h3>
+                    <ol id="high-scores-list"></ol>
+                </div>
+                <button id="play-again">Play Again</button>
             </div>
-            <button id="play-again">Play Again</button>
         </div>
     </div>
     <script src="script.js"></script>
