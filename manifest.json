@@ -2,7 +2,7 @@
   "name": "Memory Game",
   "short_name": "Memory",
   "description": "A fun memory matching game",
-  "start_url": "/",
+  "start_url": "./",
   "display": "standalone",
   "background_color": "#f5f5f5",
   "theme_color": "#95a5a6",
